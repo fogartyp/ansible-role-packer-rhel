@@ -17,6 +17,16 @@
     - kernel-devel
     - "kernel-devel-{{ kernel_release.stdout }}"
     - libselinux-python
+    - maven
+    - git
+
+# Allow Ansible to connect to localhost
+- name: Include Ansible localhost to "/etc/ansible/hosts" file
+  lineinfile:
+    dest: /etc/ansible/hosts
+    regexp: '^localhost ansible_connection=local'
+    line: 'localhost ansible_connection=local'
+    state: present
 
 # Fix slow DNS.
 - name: Fix slow DNS (adapted from Bento).
