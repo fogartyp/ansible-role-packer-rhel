@@ -28,6 +28,9 @@
     line: 'localhost ansible_connection=local'
     state: present
 
+# Add Softlayer Setup to VM
+- include: softlayer.yml
+
 # Fix slow DNS.
 - name: Fix slow DNS (adapted from Bento).
   lineinfile:
