@@ -3,7 +3,6 @@
 - name: Installing pip
   easy_install:
     name: pip
-    state: latest
 
 # Install Softlayer Python Library
 - name: Installing Softlayer Python Library
@@ -21,8 +20,27 @@
     HEADER_Content-Type: "text/plain"
     dest: "/etc/ansible/softlayer.py"
 
+- name: Checking the Ansible Modules Directory
+  shell: '[ -d /usr/lib/python*/site-packages/ansible/modules ] && echo /usr/lib/python*/site-packages/ansible/modules'
+  args:
+    executable: /bin/bash
+  register: ansible_modules_path
+
+- name: Checking for Softlayer Ansible Module Artifact
+  stat:
+    path: "{{ansible_modules_path.stdout}}/core/cloud/softlayer/sl_vm.py"
+  register: sl_exists
+
+- debug: msg={{sl_exists}}
+
+- name: Creating Softlayer Modules Directory
+  file: 
+    path: "{{ansible_modules_path.stdout}}/core/cloud/softlayer"
+    state: directory 
+    mode: 0755
+  when: ansible_modules_path.changed == true
+
 # Add Softlayer Module to Pre-2.x Release of Ansible
-# Add Cloud Inventory to Ansible
 - name: Getting Softlayer Ansible Module Artifact
   uri:
     url: "https://raw.githubusercontent.com/ansible/ansible-modules-extras/devel/cloud/softlayer/sl_vm.py"
@@ -30,4 +48,5 @@
     follow_redirects: all
     return_content: yes
     HEADER_Content-Type: "text/plain"
-    dest: "/usr/lib/python*/site-packages/ansible/modules/core/cloud/softlayer/sl_vm.py"
+    dest: "{{ansible_modules_path.stdout}}/core/cloud/softlayer/sl_vm.py"
+  when: ansible_modules_path.changed == true
